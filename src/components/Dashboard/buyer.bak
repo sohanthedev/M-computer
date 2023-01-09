@@ -1,0 +1,95 @@
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useContext } from 'react';
+import { Usercontext } from '../Authprovider/Authprovider';
+import Spinner from '../../Shared/Spinner';
+import { Link, Navigate } from 'react-router-dom';
+import { useState } from 'react';
+import Payment from '../Payment/Payment';
+import CheckoutForm from '../Payment/CheckoutForm';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+
+
+const Buyer = () => {
+    const { user } = useContext(Usercontext);
+
+    const [Product, setProduct] = useState();
+    console.log(Product)
+    const { data: carts, isLoading } = useQuery({
+        queryKey: ["users"],
+        queryFn: () =>
+            fetch(`https://mpc-server-hamidthedev.vercel.app/cart?email=${user?.email}`).then((res) => res.json()),
+    });
+
+
+    if (isLoading) {
+        <Spinner></Spinner>
+    }
+
+
+    const stripePromise = loadStripe('pk_test_51M8hmyBxfMe73ILHxnYqy2OjB7wDg0B6IpJ5WTD2m7gSbgZbp6vSCHf5jFp540bJJBtobQ5S1nd2SF3HeItprWae00Hibu5M7N');
+
+
+    return (
+        <div>
+            <section class="antialiased px-32 bg-gray-100 text-gray-600 py-24">
+                <div class="flex flex-col justify-center">
+
+                    <div class="w-full mx-auto bg-white shadow-lg rounded-sm border border-gray-200">
+                        <header class="px-5 py-4 border-b border-gray-100">
+                            <h2 class="font-semibold text-lg text-gray-800">Added Products</h2>
+                        </header>
+                        <div class="p-3">
+                            <div class="overflow-x-auto">
+                                <table class="table-auto w-full">
+                                    <thead class="text-xs font-semibold uppercase text-gray-400 bg-gray-50">
+                                        <tr>
+                                            <th class="p-2 whitespace-nowrap">
+                                                <div class="font-semibold text-left">Product Name</div>
+                                            </th>
+                                            <th class="p-2 whitespace-nowrap">
+                                                <div class="font-semibold text-left">Price</div>
+                                            </th>
+                                            <th class="p-2 whitespace-nowrap">
+                                                <div class="font-semibold text-center">Status</div>
+                                            </th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm divide-y divide-gray-100">
+                                        {
+                                            carts?.map(order => {
+                                                return <tr>
+                                                    <td class="p-2 whitespace-nowrap">
+                                                        <div class="flex items-center">
+                                                            <div class="w-10 h-10 flex-shrink-0 mr-2 sm:mr-3"><img class="rounded-full" src={order?.img} width="40" height="40" alt="no-photos" /></div>
+                                                            <div class="font-medium text-gray-800">{order?.productName}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="p-2 whitespace-nowrap">
+                                                        <div class="text-left font-medium text-green-500">${order?.price}</div>
+                                                    </td>
+                                                    <td  class="p-2 whitespace-nowrap">
+
+                                                        <button onClick={() => setProduct(order)} className='btn btn-primary'>Pay</button>
+
+
+                                                    </td>
+                                                </tr>
+                                            })
+                                        }
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    );
+};
+
+export default Buyer;
